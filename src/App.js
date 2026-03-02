@@ -140,6 +140,95 @@ const NODE_WIKI = {
   the_eerie: "The_Weird_and_the_Eerie",
 };
 
+const WORK_WIKI = {
+  "Poetics": "Poetics_(Aristotle)", "Ars Poetica": "Ars_Poetica_(Horace)", "Aeneid": "Aeneid",
+  "Candide": "Candide", "Encyclopédie": "Encyclopédie", "Critique of Pure Reason": "Critique_of_Pure_Reason",
+  "Lyrical Ballads": "Lyrical_Ballads", "Frankenstein": "Frankenstein", "Hymns to the Night": "Hymns_to_the_Night",
+  "Self-Reliance": "Self-Reliance", "Walden": "Walden", "Woman in the 19th Century": "Woman_in_the_Nineteenth_Century",
+  "The Fall of the House of Usher": "The_Fall_of_the_House_of_Usher", "The Scarlet Letter": "The_Scarlet_Letter",
+  "Moby-Dick": "Moby-Dick", "Madame Bovary": "Madame_Bovary", "Anna Karenina": "Anna_Karenina",
+  "Middlemarch": "Middlemarch", "Germinal": "Germinal_(novel)", "Sister Carrie": "Sister_Carrie",
+  "The Red Badge of Courage": "The_Red_Badge_of_Courage", "Les Fleurs du mal": "Les_Fleurs_du_mal",
+  "A Season in Hell": "A_Season_in_Hell", "Un Coup de Dés": "Un_coup_de_dés_jamais_n%27abolira_le_hasard",
+  "The Picture of Dorian Gray": "The_Picture_of_Dorian_Gray", "Against Nature": "Against_Nature_(novel)",
+  "The Renaissance": "Studies_in_the_History_of_the_Renaissance", "Salomé": "Salome_(play)",
+  "Monsieur Vénus": "Monsieur_Vénus", "The Call of Cthulhu": "The_Call_of_Cthulhu",
+  "The Great God Pan": "The_Great_God_Pan", "The Willows": "The_Willows_(story)",
+  "The King in Yellow": "The_King_in_Yellow", "Ulysses": "Ulysses_(novel)",
+  "Mrs Dalloway": "Mrs_Dalloway", "The Waste Land": "The_Waste_Land",
+  "The Trial": "The_Trial", "Nadja": "Nadja_(novel)",
+  "Manifestoes of Surrealism": "Surrealist_Manifesto", "The Weary Blues": "The_Weary_Blues",
+  "Their Eyes Were Watching God": "Their_Eyes_Were_Watching_God", "The New Negro": "The_New_Negro",
+  "Being and Nothingness": "Being_and_Nothingness", "The Stranger": "The_Stranger_(Camus_novel)",
+  "The Second Sex": "The_Second_Sex", "On the Road": "On_the_Road",
+  "Howl": "Howl_(poem)", "Naked Lunch": "Naked_Lunch",
+  "The Well Wrought Urn": "The_Well_Wrought_Urn", "Understanding Poetry": "Understanding_Poetry",
+  "Course in General Linguistics": "Course_in_General_Linguistics", "Mythologiques": "Mythologiques",
+  "The Drowned World": "The_Drowned_World", "The Left Hand of Darkness": "The_Left_Hand_of_Darkness",
+  "Dhalgren": "Dhalgren", "Of Grammatology": "Of_Grammatology",
+  "Discipline and Punish": "Discipline_and_Punish", "S/Z": "S/Z",
+  "Gravity's Rainbow": "Gravity%27s_Rainbow", "White Noise": "White_Noise_(novel)",
+  "Ficciones": "Ficciones", "Orientalism": "Orientalism_(book)",
+  "The Wretched of the Earth": "The_Wretched_of_the_Earth", "Things Fall Apart": "Things_Fall_Apart",
+  "One Hundred Years of Solitude": "One_Hundred_Years_of_Solitude", "Midnight's Children": "Midnight%27s_Children",
+  "A Room of One's Own": "A_Room_of_One%27s_Own", "The Laugh of the Medusa": "The_Laugh_of_the_Medusa",
+  "Neuromancer": "Neuromancer", "Do Androids Dream of Electric Sheep?": "Do_Androids_Dream_of_Electric_Sheep%3F",
+  "Snow Crash": "Snow_Crash", "Perdido Street Station": "Perdido_Street_Station",
+  "Annihilation": "Annihilation_(VanderMeer_novel)", "The Vorrh": "The_Vorrh",
+  "Kindred": "Kindred_(novel)", "The Fifth Season": "The_Fifth_Season_(novel)",
+  "Space Is the Place": "Space_Is_the_Place", "Binti": "Binti_(novella)",
+  "On the Sublime": "On_the_Sublime", "A Philosophical Enquiry": "A_Philosophical_Enquiry_into_the_Origin_of_Our_Ideas_of_the_Sublime_and_Beautiful",
+  "Republic": "Republic_(Plato)", "Mimesis": "Mimesis:_The_Representation_of_Reality_in_Western_Literature",
+  "Economic and Philosophic Manuscripts": "Economic_and_Philosophic_Manuscripts_of_1844",
+  "The Metamorphosis": "The_Metamorphosis", "The Uncanny": "The_Uncanny",
+  "The Sandman": "The_Sandman_(short_story)", "Desire in Language": "Desire_in_Language",
+  "Palimpsests": "Palimpsests:_Literature_in_the_Second_Degree",
+  "Death of the Author": "The_Death_of_the_Author", "What Is an Author?": "What_Is_an_Author%3F",
+  "The Sound and the Fury": "The_Sound_and_the_Fury",
+  "The Myth of Sisyphus": "The_Myth_of_Sisyphus", "Waiting for Godot": "Waiting_for_Godot",
+  "Art as Technique": "Defamiliarization", "Castle of Otranto": "The_Castle_of_Otranto",
+  "Beloved": "Beloved_(novel)", "Lolita": "Lolita",
+  "The Remains of the Day": "The_Remains_of_the_Day",
+  "The Painter of Modern Life": "The_Painter_of_Modern_Life", "The Arcades Project": "The_Arcades_Project",
+  "Rabelais and His World": "Rabelais_and_His_World", "Nights at the Circus": "Nights_at_the_Circus",
+  "1984": "Nineteen_Eighty-Four", "The Handmaid's Tale": "The_Handmaid%27s_Tale",
+  "The Souls of Black Folk": "The_Souls_of_Black_Folk", "Invisible Man": "Invisible_Man",
+  "This Sex Which Is Not One": "This_Sex_Which_Is_Not_One",
+  "Specters of Marx": "Specters_of_Marx", "Ghosts of My Life": "Ghosts_of_My_Life",
+  "The Rings of Saturn": "The_Rings_of_Saturn_(novel)",
+  "Practical Criticism": "Practical_Criticism", "Seven Types of Ambiguity": "Seven_Types_of_Ambiguity",
+  "The Dialogic Imagination": "The_Dialogic_Imagination",
+  "The Conspiracy Against the Human Race": "The_Conspiracy_Against_the_Human_Race",
+  "Powers of Horror": "Powers_of_Horror", "Story of the Eye": "Story_of_the_Eye",
+  "Metamorphoses of Science Fiction": "Metamorphoses_of_Science_Fiction",
+  "The Idea of the Holy": "The_Idea_of_the_Holy", "On Fairy-Stories": "On_Fairy-Stories",
+  "The Lord of the Rings": "The_Lord_of_the_Rings", "Gormenghast": "Gormenghast_(series)",
+  "The Double": "The_Double_(Dostoevsky_novel)", "William Wilson": "William_Wilson_(short_story)",
+  "The Ritual Process": "The_Ritual_Process", "House of Leaves": "House_of_Leaves",
+  "The Hellbound Heart": "The_Hellbound_Heart", "Videodrome": "Videodrome",
+  "The Lottery": "The_Lottery", "The Wicker Man": "The_Wicker_Man_(1973_film)",
+  "The Witch": "The_Witch_(2015_film)", "The Ritual": "The_Ritual_(novel)",
+  "Brave New World": "Brave_New_World", "We": "We_(novel)",
+  "The Fantastic": "The_Fantastic:_A_Structural_Approach_to_a_Literary_Genre",
+  "Blow-Up": "Blow-Up_and_Other_Stories", "Totality and Infinity": "Totality_and_Infinity",
+  "The Road": "The_Road", "The Last Man": "The_Last_Man",
+  "Parable of the Sower": "Parable_of_the_Sower_(novel)", "The Library of Babel": "The_Library_of_Babel",
+  "Monster Theory": "Monster_Theory", "The Bloody Chamber": "The_Bloody_Chamber",
+  "The Garden of Forking Paths": "The_Garden_of_Forking_Paths", "The Name of the Rose": "The_Name_of_the_Rose",
+  "The Silmarillion": "The_Silmarillion", "Earthsea": "Earthsea",
+  "The Broken Earth": "The_Broken_Earth", "Theory of the Dérive": "Dérive",
+  "The Weird and the Eerie": "The_Weird_and_the_Eerie", "Stalker": "Stalker_(1979_film)",
+  "The Tell-Tale Heart": "The_Tell-Tale_Heart", "Mont Blanc": "Mont_Blanc_(poem)",
+  "Tlön, Uqbar, Orbis Tertius": "Tlön,_Uqbar,_Orbis_Tertius",
+  "Black Skin White Masks": "Black_Skin,_White_Masks",
+  "A Wizard of Earthsea": "A_Wizard_of_Earthsea",
+};
+
+function workWikiUrl(title) {
+  if (WORK_WIKI[title]) return WIKI + WORK_WIKI[title];
+  return null;
+}
+
 function wikiUrl(name) {
   if (THINKER_WIKI[name]) return WIKI + THINKER_WIKI[name];
   return WIKI + name.replace(/ /g, "_");
@@ -497,7 +586,11 @@ export default function LiteraryConceptMap2DLinked() {
             </div>
             <div style={{ marginBottom: 14 }}>
               <h3 style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4a4a6a", marginBottom: 5, fontWeight: 600 }}>Key Works</h3>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>{sn.works.map(w => <span key={w} style={{ background: "#12122a", padding: "2px 7px", borderRadius: 4, fontSize: 10, color: "#8888aa", fontStyle: "italic", border: "1px solid #1a1a3a" }}>{w}</span>)}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>{sn.works.map(w => {
+                const url = workWikiUrl(w);
+                const inner = <span key={w} style={{ background: "#12122a", padding: "2px 7px", borderRadius: 4, fontSize: 10, color: "#8888aa", fontStyle: "italic", border: "1px solid #1a1a3a", cursor: url ? "pointer" : "default", transition: "color 0.15s, border-color 0.15s", display: "inline-block" }} onMouseEnter={url ? e => { e.target.style.color = "#bbbbff"; e.target.style.borderColor = "#3333aa"; } : undefined} onMouseLeave={url ? e => { e.target.style.color = "#8888aa"; e.target.style.borderColor = "#1a1a3a"; } : undefined}>{w}</span>;
+                return url ? <a key={w} href={url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>{inner}</a> : inner;
+              })}</div>
             </div>
             {ce.length > 0 && (
               <div>
