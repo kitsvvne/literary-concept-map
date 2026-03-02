@@ -1,84 +1,227 @@
 import { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
 
+// Wikipedia URL helpers
+const WIKI = "https://en.wikipedia.org/wiki/";
+const THINKER_WIKI = {
+  "Barthes (early)": "Roland_Barthes", "Barthes (late)": "Roland_Barthes",
+  "James (William)": "William_James", "Jackson (Rosemary)": "Rosemary_Jackson",
+  "Gilbert & Gubar": "Sandra_Gilbert", "the Formalists": "Russian_formalism",
+  "Shelley (Mary)": "Mary_Shelley", "Octavia Butler": "Octavia_E._Butler",
+  "de Beauvoir": "Simone_de_Beauvoir", "de Certeau": "Michel_de_Certeau",
+  "de Man": "Paul_de_Man", "hooks": "Bell_hooks", "de Quincey": "Thomas_De_Quincey",
+  "M.R. James": "M._R._James", "M. John Harrison": "M._John_Harrison",
+  "Mark Fisher": "Mark_Fisher_(theorist)", "Sun Ra": "Sun_Ra",
+  "van Gennep": "Arnold_van_Gennep", "Robert Eggers": "Robert_Eggers",
+  "George Eliot": "George_Eliot", "Angela Carter": "Angela_Carter",
+  "Clive Barker": "Clive_Barker", "Adam Nevill": "Adam_Nevill",
+  "Shirley Jackson": "Shirley_Jackson", "Le Guin": "Ursula_K._Le_Guin",
+  "Dick": "Philip_K._Dick", "Poe": "Edgar_Allan_Poe",
+  "Shelley": "Percy_Bysshe_Shelley", "Wilde": "Oscar_Wilde",
+  "Keats": "John_Keats", "Wordsworth": "William_Wordsworth",
+  "Hugo": "Victor_Hugo", "Novalis": "Novalis",
+  "Hume": "David_Hume", "Kant": "Immanuel_Kant",
+  "Voltaire": "Voltaire", "Diderot": "Denis_Diderot",
+  "Horace": "Horace", "Virgil": "Virgil",
+  "Aristotle": "Aristotle", "Plato": "Plato",
+  "Flaubert": "Gustave_Flaubert", "Tolstoy": "Leo_Tolstoy",
+  "Balzac": "Honoré_de_Balzac", "Zola": "Émile_Zola",
+  "Dreiser": "Theodore_Dreiser", "Crane": "Stephen_Crane",
+  "Norris": "Frank_Norris", "Mallarmé": "Stéphane_Mallarmé",
+  "Rimbaud": "Arthur_Rimbaud", "Verlaine": "Paul_Verlaine",
+  "Yeats": "W._B._Yeats", "Baudelaire": "Charles_Baudelaire",
+  "Pater": "Walter_Pater", "Huysmans": "Joris-Karl_Huysmans",
+  "Gautier": "Théophile_Gautier", "Rachilde": "Rachilde",
+  "Hoffmann": "E._T._A._Hoffmann", "Hawthorne": "Nathaniel_Hawthorne",
+  "Melville": "Herman_Melville", "Lovecraft": "H._P._Lovecraft",
+  "Machen": "Arthur_Machen", "Blackwood": "Algernon_Blackwood",
+  "Hodgson": "William_Hope_Hodgson", "Chambers": "Robert_W._Chambers",
+  "Joyce": "James_Joyce", "Woolf": "Virginia_Woolf",
+  "Eliot": "T._S._Eliot", "Pound": "Ezra_Pound",
+  "Kafka": "Franz_Kafka", "Breton": "André_Breton",
+  "Lautréamont": "Comte_de_Lautréamont", "Éluard": "Paul_Éluard",
+  "Césaire": "Aimé_Césaire", "Hughes": "Langston_Hughes",
+  "Hurston": "Zora_Neale_Hurston", "Locke": "Alain_LeRoy_Locke",
+  "McKay": "Claude_McKay", "Larsen": "Nella_Larsen",
+  "Sartre": "Jean-Paul_Sartre", "Camus": "Albert_Camus",
+  "Kierkegaard": "Søren_Kierkegaard", "Dostoevsky": "Fyodor_Dostoevsky",
+  "Kerouac": "Jack_Kerouac", "Ginsberg": "Allen_Ginsberg",
+  "Burroughs": "William_S._Burroughs", "Corso": "Gregory_Corso",
+  "Brooks": "Cleanth_Brooks", "Ransom": "John_Crowe_Ransom",
+  "Wimsatt": "William_K._Wimsatt", "Warren": "Robert_Penn_Warren",
+  "Saussure": "Ferdinand_de_Saussure", "Lévi-Strauss": "Claude_Lévi-Strauss",
+  "Jakobson": "Roman_Jakobson", "Ballard": "J._G._Ballard",
+  "Delany": "Samuel_R._Delany", "Ellison": "Harlan_Ellison",
+  "Moorcock": "Michael_Moorcock", "Derrida": "Jacques_Derrida",
+  "Foucault": "Michel_Foucault", "Deleuze": "Gilles_Deleuze",
+  "Pynchon": "Thomas_Pynchon", "DeLillo": "Don_DeLillo",
+  "Barth": "John_Barth", "Borges": "Jorge_Luis_Borges",
+  "Calvino": "Italo_Calvino", "Said": "Edward_Said",
+  "Fanon": "Frantz_Fanon", "Spivak": "Gayatri_Chakravorty_Spivak",
+  "Achebe": "Chinua_Achebe", "Rushdie": "Salman_Rushdie",
+  "García Márquez": "Gabriel_García_Márquez", "Allende": "Isabel_Allende",
+  "Carpentier": "Alejo_Carpentier", "Cixous": "Hélène_Cixous",
+  "Irigaray": "Luce_Irigaray", "Kristeva": "Julia_Kristeva",
+  "Gibson": "William_Gibson", "Sterling": "Bruce_Sterling",
+  "Stephenson": "Neal_Stephenson", "Cadigan": "Pat_Cadigan",
+  "Miéville": "China_Miéville", "VanderMeer": "Jeff_VanderMeer",
+  "Catling": "Brian_Catling", "Butler": "Octavia_E._Butler",
+  "Jemisin": "N._K._Jemisin", "Eshun": "Kodwo_Eshun",
+  "Okorafor": "Nnedi_Okorafor", "Longinus": "Longinus_(literature)",
+  "Burke": "Edmund_Burke", "Auerbach": "Erich_Auerbach",
+  "Bernays": "Jacob_Bernays", "Freud": "Sigmund_Freud",
+  "Marx": "Karl_Marx", "Brecht": "Bertolt_Brecht",
+  "Barthes": "Roland_Barthes", "Genette": "Gérard_Genette",
+  "Bakhtin": "Mikhail_Bakhtin", "Shklovsky": "Viktor_Shklovsky",
+  "Walpole": "Horace_Walpole", "Radcliffe": "Ann_Radcliffe",
+  "Morrison": "Toni_Morrison", "Booth": "Wayne_C._Booth",
+  "Nabokov": "Vladimir_Nabokov", "Ishiguro": "Kazuo_Ishiguro",
+  "Benjamin": "Walter_Benjamin", "Rabelais": "François_Rabelais",
+  "Bentham": "Jeremy_Bentham", "Orwell": "George_Orwell",
+  "Atwood": "Margaret_Atwood", "Du Bois": "W._E._B._Du_Bois",
+  "Fisher": "Mark_Fisher_(theorist)", "Sebald": "W._G._Sebald",
+  "Richards": "I._A._Richards", "Empson": "William_Empson",
+  "Ligotti": "Thomas_Ligotti", "Bataille": "Georges_Bataille",
+  "Cronenberg": "David_Cronenberg", "Suvin": "Darko_Suvin",
+  "Otto": "Rudolf_Otto", "Tolkien": "J._R._R._Tolkien",
+  "Lewis": "C._S._Lewis", "Peake": "Mervyn_Peake",
+  "Jordan": "Robert_Jordan", "Saramago": "José_Saramago",
+  "Turner": "Victor_Turner", "Barker": "Clive_Barker",
+  "Danielewski": "Mark_Z._Danielewski", "Huxley": "Aldous_Huxley",
+  "Zamyatin": "Yevgeny_Zamyatin", "Todorov": "Tzvetan_Todorov",
+  "Cortázar": "Julio_Cortázar", "Levinas": "Emmanuel_Levinas",
+  "McCarthy": "Cormac_McCarthy", "Cohen": "Jeffrey_Jerome_Cohen",
+  "Eco": "Umberto_Eco", "Blake": "William_Blake",
+  "Debord": "Guy_Debord", "Sinclair": "Iain_Sinclair",
+  "Perec": "Georges_Perec", "Tarkovsky": "Andrei_Tarkovsky",
+  "Faulkner": "William_Faulkner", "Beckett": "Samuel_Beckett",
+  "Ionesco": "Eugène_Ionesco", "Emerson": "Ralph_Waldo_Emerson",
+  "Thoreau": "Henry_David_Thoreau", "Fuller": "Margaret_Fuller",
+  "Piranesi (Clarke)": "Susanna_Clarke",
+  "van Gennep": "Arnold_van_Gennep",
+};
+
+const NODE_WIKI = {
+  classicism: "Classicism", enlightenment: "Age_of_Enlightenment",
+  romanticism: "Romanticism", transcendentalism: "Transcendentalism",
+  dark_romanticism: "Dark_romanticism", realism: "Literary_realism",
+  naturalism: "Naturalism_(literature)", symbolism: "Symbolism_(arts)",
+  aestheticism: "Aestheticism", decadence: "Decadent_movement",
+  weird_fiction: "Weird_fiction", modernism: "Literary_modernism",
+  surrealism: "Surrealism", harlem_renaissance: "Harlem_Renaissance",
+  existentialism: "Existentialism", beat_generation: "Beat_Generation",
+  new_criticism: "New_Criticism", structuralism: "Structuralism",
+  new_wave_sf: "New_Wave_science_fiction",
+  poststructuralism: "Post-structuralism", postmodernism: "Postmodern_literature",
+  postcolonialism: "Postcolonialism", magical_realism: "Magic_realism",
+  feminist_lit: "Feminist_literary_criticism", cyberpunk: "Cyberpunk",
+  new_weird: "New_weird", afrofuturism: "Afrofuturism",
+  the_sublime: "Sublime_(philosophy)", mimesis: "Mimesis",
+  catharsis: "Catharsis", alienation: "Marx%27s_theory_of_alienation",
+  the_uncanny: "Uncanny", intertextuality: "Intertextuality",
+  death_of_author: "The_Death_of_the_Author",
+  stream_of_consciousness: "Stream_of_consciousness_(narrative_mode)",
+  the_absurd: "Absurdism", defamiliarization: "Defamiliarization",
+  gothic: "Gothic_fiction", unreliable_narrator: "Unreliable_narrator",
+  flaneur: "Flâneur", carnival: "Carnivalesque",
+  panopticon: "Panopticon", double_consciousness: "Double_consciousness",
+  ecriture_feminine: "Écriture_féminine", hauntology: "Hauntology",
+  palimpsest: "Palimpsest", close_reading: "Close_reading",
+  heteroglossia: "Heteroglossia", cosmic_horror: "Lovecraftian_horror",
+  the_abject: "Abjection", cognitive_estrangement: "Cognitive_estrangement",
+  the_numinous: "Numinous", secondary_creation: "Mythopoeia#Sub-creation",
+  the_doppelganger: "Doppelgänger", liminality: "Liminality",
+  body_horror: "Body_horror", folk_horror: "Folk_horror",
+  dystopia: "Dystopia", the_fantastic: "Fantastic",
+  the_other: "Other_(philosophy)", apocalypticism: "Apocalypticism",
+  epistemic_horror: "Cosmic_horror", the_monstrous: "Monster_theory",
+  the_labyrinth: "Labyrinth", mythopoeia: "Mythopoeia",
+  psychogeography: "Psychogeography", the_weird: "Weird_fiction",
+  the_eerie: "The_Weird_and_the_Eerie",
+};
+
+function wikiUrl(name) {
+  if (THINKER_WIKI[name]) return WIKI + THINKER_WIKI[name];
+  return WIKI + name.replace(/ /g, "_");
+}
+
+function nodeWikiUrl(id) {
+  if (NODE_WIKI[id]) return WIKI + NODE_WIKI[id];
+  return null;
+}
+
 const NODES = [
-  // ── MOVEMENTS ──
   { id: "classicism", label: "Classicism", type: "movement", era: "ancient", description: "Emphasis on order, harmony, proportion, and adherence to established forms. Rooted in Greek and Roman models.", thinkers: ["Aristotle", "Horace", "Virgil"], works: ["Poetics", "Ars Poetica", "Aeneid"] },
   { id: "enlightenment", label: "Enlightenment", type: "movement", era: "18c", description: "Reason as the primary authority. Skepticism of tradition, emphasis on empiricism, individual liberty, and progress.", thinkers: ["Voltaire", "Diderot", "Hume", "Kant"], works: ["Candide", "Encyclopédie", "Critique of Pure Reason"] },
   { id: "romanticism", label: "Romanticism", type: "movement", era: "19c-early", description: "Revolt against rationalism. Elevation of emotion, imagination, the sublime, nature, and the individual genius.", thinkers: ["Wordsworth", "Shelley", "Keats", "Novalis", "Hugo"], works: ["Lyrical Ballads", "Frankenstein", "Hymns to the Night"] },
   { id: "transcendentalism", label: "Transcendentalism", type: "movement", era: "19c-early", description: "American offshoot of Romanticism. Inherent goodness of people and nature, self-reliance, spiritual unity.", thinkers: ["Emerson", "Thoreau", "Fuller"], works: ["Self-Reliance", "Walden", "Woman in the 19th Century"] },
-  { id: "dark_romanticism", label: "Dark Romanticism", type: "movement", era: "19c-early", description: "The shadow-side of Romanticism. Sin, self-destruction, the demonic, and the fallibility of the human will. Nature as indifferent or hostile.", thinkers: ["Poe", "Hawthorne", "Melville", "Hoffmann"], works: ["The Fall of the House of Usher", "The Scarlet Letter", "Moby-Dick", "The Sandman"] },
+  { id: "dark_romanticism", label: "Dark Romanticism", type: "movement", era: "19c-early", description: "The shadow-side of Romanticism. Sin, self-destruction, the demonic, and the fallibility of the human will.", thinkers: ["Poe", "Hawthorne", "Melville", "Hoffmann"], works: ["The Fall of the House of Usher", "The Scarlet Letter", "Moby-Dick"] },
   { id: "realism", label: "Realism", type: "movement", era: "19c-mid", description: "Faithful representation of everyday life without idealization. Focus on middle-class experience and social conditions.", thinkers: ["Flaubert", "Tolstoy", "George Eliot", "Balzac"], works: ["Madame Bovary", "Anna Karenina", "Middlemarch"] },
   { id: "naturalism", label: "Naturalism", type: "movement", era: "19c-late", description: "Extension of realism through scientific determinism. Humans as animals shaped by heredity and environment.", thinkers: ["Zola", "Dreiser", "Crane", "Norris"], works: ["Germinal", "Sister Carrie", "The Red Badge of Courage"] },
-  { id: "symbolism", label: "Symbolism", type: "movement", era: "19c-late", description: "Rejection of realism in favor of suggestion, musicality, and the evocation of inner states through symbols. The visible world as a veil over deeper truths.", thinkers: ["Baudelaire", "Mallarmé", "Rimbaud", "Verlaine", "Yeats"], works: ["Les Fleurs du mal", "A Season in Hell", "Un Coup de Dés"] },
-  { id: "aestheticism", label: "Aestheticism", type: "movement", era: "19c-late", description: "Art for art's sake. Beauty as the highest value, severed from moral or social utility. Sensory experience elevated to a creed.", thinkers: ["Wilde", "Pater", "Huysmans", "Gautier"], works: ["The Picture of Dorian Gray", "Against Nature", "The Renaissance"] },
+  { id: "symbolism", label: "Symbolism", type: "movement", era: "19c-late", description: "Rejection of realism in favor of suggestion, musicality, and the evocation of inner states through symbols.", thinkers: ["Baudelaire", "Mallarmé", "Rimbaud", "Verlaine", "Yeats"], works: ["Les Fleurs du mal", "A Season in Hell", "Un Coup de Dés"] },
+  { id: "aestheticism", label: "Aestheticism", type: "movement", era: "19c-late", description: "Art for art's sake. Beauty as the highest value, severed from moral or social utility.", thinkers: ["Wilde", "Pater", "Huysmans", "Gautier"], works: ["The Picture of Dorian Gray", "Against Nature"] },
   { id: "decadence", label: "Decadence", type: "movement", era: "19c-late", description: "Cultivation of artifice over nature, perversity over convention. Fascination with decay, ennui, and transgressive beauty.", thinkers: ["Huysmans", "Wilde", "Baudelaire", "Rachilde"], works: ["Against Nature", "Salomé", "Monsieur Vénus"] },
-  { id: "weird_fiction", label: "Weird Fiction", type: "movement", era: "20c-early", description: "Literature of radical ontological wrongness. Not ghosts or monsters but the sense that reality itself is alien. Cosmic scale annihilates human meaning.", thinkers: ["Lovecraft", "Machen", "Blackwood", "Hodgson", "Chambers"], works: ["The Call of Cthulhu", "The Great God Pan", "The Willows", "The King in Yellow"] },
+  { id: "weird_fiction", label: "Weird Fiction", type: "movement", era: "20c-early", description: "Literature of radical ontological wrongness. Not ghosts or monsters but the sense that reality itself is alien.", thinkers: ["Lovecraft", "Machen", "Blackwood", "Hodgson", "Chambers"], works: ["The Call of Cthulhu", "The Great God Pan", "The Willows"] },
   { id: "modernism", label: "Modernism", type: "movement", era: "20c-early", description: "Radical break with tradition. Fragmentation, stream of consciousness, mythic method, alienation, formal experimentation.", thinkers: ["Joyce", "Woolf", "Eliot", "Pound", "Kafka"], works: ["Ulysses", "Mrs Dalloway", "The Waste Land", "The Trial"] },
-  { id: "surrealism", label: "Surrealism", type: "movement", era: "20c-early", description: "Liberation of the unconscious mind. Automatic writing, dream logic, juxtaposition of the irrational. Art as psychic revolution.", thinkers: ["Breton", "Lautréamont", "Éluard", "Césaire"], works: ["Nadja", "Manifestoes of Surrealism", "Notebook of a Return to the Native Land"] },
-  { id: "harlem_renaissance", label: "Harlem Renaissance", type: "movement", era: "20c-early", description: "Flowering of Black art, literature, and intellectual life. Reclamation of identity, folk traditions, and the politics of visibility.", thinkers: ["Hughes", "Hurston", "Locke", "McKay", "Larsen"], works: ["The Weary Blues", "Their Eyes Were Watching God", "The New Negro"] },
+  { id: "surrealism", label: "Surrealism", type: "movement", era: "20c-early", description: "Liberation of the unconscious mind. Automatic writing, dream logic, juxtaposition of the irrational.", thinkers: ["Breton", "Lautréamont", "Éluard", "Césaire"], works: ["Nadja", "Manifestoes of Surrealism"] },
+  { id: "harlem_renaissance", label: "Harlem Renaissance", type: "movement", era: "20c-early", description: "Flowering of Black art, literature, and intellectual life. Reclamation of identity, folk traditions, and the politics of visibility.", thinkers: ["Hughes", "Hurston", "Locke", "McKay", "Larsen"], works: ["The Weary Blues", "Their Eyes Were Watching God"] },
   { id: "existentialism", label: "Existentialism", type: "movement", era: "20c-mid", description: "Existence precedes essence. Radical freedom, absurdity, authenticity, anxiety, and the weight of choice.", thinkers: ["Sartre", "Camus", "de Beauvoir", "Kierkegaard", "Dostoevsky"], works: ["Being and Nothingness", "The Stranger", "The Second Sex"] },
-  { id: "beat_generation", label: "Beat Generation", type: "movement", era: "20c-mid", description: "Rejection of conformity, spontaneous prose, spiritual seeking, drugs, jazz, and the open road. Anti-establishment ecstasy.", thinkers: ["Kerouac", "Ginsberg", "Burroughs", "Corso"], works: ["On the Road", "Howl", "Naked Lunch"] },
-  { id: "new_criticism", label: "New Criticism", type: "movement", era: "20c-mid", description: "Close reading of the text as a self-contained object. Rejection of authorial intent, historical context, and reader response.", thinkers: ["Brooks", "Ransom", "Wimsatt", "Warren"], works: ["The Well Wrought Urn", "Understanding Poetry"] },
-  { id: "structuralism", label: "Structuralism", type: "movement", era: "20c-mid", description: "Meaning arises from underlying systems and structures, not individual elements. Language as a model for all cultural phenomena.", thinkers: ["Saussure", "Lévi-Strauss", "Barthes (early)", "Jakobson"], works: ["Course in General Linguistics", "Mythologiques", "Elements of Semiology"] },
-  { id: "new_wave_sf", label: "New Wave SF", type: "movement", era: "20c-mid", description: "Science fiction turns inward. Psychological depth, literary ambition, social critique, and formal experimentation replace hardware and space opera.", thinkers: ["Ballard", "Le Guin", "Delany", "Ellison", "Moorcock"], works: ["The Drowned World", "The Left Hand of Darkness", "Dhalgren", "Dangerous Visions"] },
-  { id: "poststructuralism", label: "Post-structuralism", type: "movement", era: "20c-late", description: "Dismantling of stable structures. Meaning is endlessly deferred, texts deconstruct themselves, power permeates discourse.", thinkers: ["Derrida", "Foucault", "Deleuze", "Barthes (late)"], works: ["Of Grammatology", "Discipline and Punish", "S/Z"] },
-  { id: "postmodernism", label: "Postmodernism", type: "movement", era: "20c-late", description: "Skepticism of grand narratives, playful self-referentiality, pastiche, blurred boundaries between high and low culture.", thinkers: ["Pynchon", "DeLillo", "Barth", "Borges", "Calvino"], works: ["Gravity's Rainbow", "White Noise", "Ficciones", "If on a winter's night a traveler"] },
+  { id: "beat_generation", label: "Beat Generation", type: "movement", era: "20c-mid", description: "Rejection of conformity, spontaneous prose, spiritual seeking, drugs, jazz, and the open road.", thinkers: ["Kerouac", "Ginsberg", "Burroughs", "Corso"], works: ["On the Road", "Howl", "Naked Lunch"] },
+  { id: "new_criticism", label: "New Criticism", type: "movement", era: "20c-mid", description: "Close reading of the text as a self-contained object. Rejection of authorial intent and historical context.", thinkers: ["Brooks", "Ransom", "Wimsatt", "Warren"], works: ["The Well Wrought Urn", "Understanding Poetry"] },
+  { id: "structuralism", label: "Structuralism", type: "movement", era: "20c-mid", description: "Meaning arises from underlying systems and structures. Language as a model for all cultural phenomena.", thinkers: ["Saussure", "Lévi-Strauss", "Barthes (early)", "Jakobson"], works: ["Course in General Linguistics", "Mythologiques"] },
+  { id: "new_wave_sf", label: "New Wave SF", type: "movement", era: "20c-mid", description: "Science fiction turns inward. Psychological depth, literary ambition, social critique replace hardware.", thinkers: ["Ballard", "Le Guin", "Delany", "Ellison", "Moorcock"], works: ["The Drowned World", "The Left Hand of Darkness", "Dhalgren"] },
+  { id: "poststructuralism", label: "Post-structuralism", type: "movement", era: "20c-late", description: "Dismantling of stable structures. Meaning endlessly deferred, power permeates discourse.", thinkers: ["Derrida", "Foucault", "Deleuze", "Barthes (late)"], works: ["Of Grammatology", "Discipline and Punish", "S/Z"] },
+  { id: "postmodernism", label: "Postmodernism", type: "movement", era: "20c-late", description: "Skepticism of grand narratives, playful self-referentiality, pastiche, blurred high/low boundaries.", thinkers: ["Pynchon", "DeLillo", "Barth", "Borges", "Calvino"], works: ["Gravity's Rainbow", "White Noise", "Ficciones"] },
   { id: "postcolonialism", label: "Postcolonialism", type: "movement", era: "20c-late", description: "Interrogation of colonial legacies, power, identity, hybridity, and the politics of representation.", thinkers: ["Said", "Fanon", "Spivak", "Achebe", "Rushdie"], works: ["Orientalism", "The Wretched of the Earth", "Things Fall Apart"] },
-  { id: "magical_realism", label: "Magical Realism", type: "movement", era: "20c-late", description: "The marvelous treated as mundane. Reality and fantasy coexist without contradiction, often tied to cultural memory.", thinkers: ["García Márquez", "Allende", "Rushdie", "Carpentier"], works: ["One Hundred Years of Solitude", "Midnight's Children"] },
-  { id: "feminist_lit", label: "Feminist Literary Thought", type: "movement", era: "20c-late", description: "Interrogation of gender in literary production, canon formation, and textual meaning. Recovery of silenced voices to écriture féminine.", thinkers: ["de Beauvoir", "Woolf", "Cixous", "hooks", "Gilbert & Gubar"], works: ["A Room of One's Own", "The Second Sex", "The Laugh of the Medusa", "The Madwoman in the Attic"] },
-  { id: "cyberpunk", label: "Cyberpunk", type: "movement", era: "20c-late", description: "High tech, low life. Corporate dystopia, body modification, virtual reality, street-level survival. The future as noir.", thinkers: ["Gibson", "Sterling", "Dick", "Stephenson", "Cadigan"], works: ["Neuromancer", "Do Androids Dream of Electric Sheep?", "Snow Crash", "Synners"] },
-  { id: "new_weird", label: "New Weird", type: "movement", era: "21c", description: "Post-Lovecraftian genre-blending: fantasy, SF, and horror collapsed together. Politically aware, ecologically anxious, taxonomically unruly.", thinkers: ["Miéville", "VanderMeer", "M. John Harrison", "Catling"], works: ["Perdido Street Station", "Annihilation", "The Vorrh", "Light"] },
-  { id: "afrofuturism", label: "Afrofuturism", type: "movement", era: "21c", description: "Black speculative thought blending science fiction, mythology, and Afrodiasporic traditions. Reimagining the past and future simultaneously.", thinkers: ["Butler", "Jemisin", "Sun Ra", "Eshun", "Okorafor"], works: ["Kindred", "The Fifth Season", "Space Is the Place", "Binti"] },
-
-  // ── CONCEPTS ──
-  { id: "the_sublime", label: "The Sublime", type: "concept", era: "cross-era", description: "Experience of awe, terror, and vastness that exceeds rational comprehension. From Longinus through Burke to Kant to the Romantics.", thinkers: ["Longinus", "Burke", "Kant", "Shelley"], works: ["On the Sublime", "A Philosophical Enquiry", "Mont Blanc"] },
-  { id: "mimesis", label: "Mimesis", type: "concept", era: "cross-era", description: "Art as imitation of reality. Central tension in Western aesthetics from Plato's suspicion to Aristotle's defense to modern complications.", thinkers: ["Plato", "Aristotle", "Auerbach"], works: ["Republic", "Poetics", "Mimesis: The Representation of Reality"] },
-  { id: "catharsis", label: "Catharsis", type: "concept", era: "cross-era", description: "Emotional purgation through art, especially tragedy. The audience experiences pity and fear vicariously, achieving release.", thinkers: ["Aristotle", "Bernays", "Freud"], works: ["Poetics"] },
-  { id: "alienation", label: "Alienation", type: "concept", era: "cross-era", description: "Estrangement from self, society, labor, or meaning. From Marx's economic alienation to existential and modernist senses.", thinkers: ["Marx", "Kafka", "Brecht", "Camus"], works: ["Economic and Philosophic Manuscripts", "The Metamorphosis", "The Stranger"] },
-  { id: "the_uncanny", label: "The Uncanny", type: "concept", era: "cross-era", description: "The familiar made strange. Freud's unheimlich — what should have remained hidden but has come to light. Doubles, automata, returns.", thinkers: ["Freud", "Hoffmann", "Todorov", "Kristeva"], works: ["The Uncanny", "The Sandman"] },
-  { id: "intertextuality", label: "Intertextuality", type: "concept", era: "cross-era", description: "All texts exist in relation to other texts. Meaning is produced through networks of reference, allusion, and transformation.", thinkers: ["Kristeva", "Barthes", "Genette", "Bakhtin"], works: ["Desire in Language", "S/Z", "Palimpsests"] },
-  { id: "death_of_author", label: "Death of the Author", type: "concept", era: "20c-late", description: "The author's intentions and biography are irrelevant to textual meaning. The reader produces the text's significance.", thinkers: ["Barthes", "Foucault", "Derrida"], works: ["Death of the Author", "What Is an Author?"] },
-  { id: "stream_of_consciousness", label: "Stream of Consciousness", type: "concept", era: "20c-early", description: "Narrative technique rendering the continuous flow of a character's thoughts, sensations, and associations.", thinkers: ["James (William)", "Joyce", "Woolf", "Faulkner"], works: ["Ulysses", "Mrs Dalloway", "The Sound and the Fury"] },
-  { id: "the_absurd", label: "The Absurd", type: "concept", era: "20c-mid", description: "The conflict between human desire for meaning and the universe's indifference. Neither despair nor hope — lucid confrontation.", thinkers: ["Camus", "Beckett", "Ionesco", "Kierkegaard"], works: ["The Myth of Sisyphus", "Waiting for Godot", "The Bald Soprano"] },
-  { id: "defamiliarization", label: "Defamiliarization", type: "concept", era: "20c-early", description: "Making the familiar strange to force fresh perception. Shklovsky's ostranenie — art exists to recover the sensation of life.", thinkers: ["Shklovsky", "Brecht", "the Formalists"], works: ["Art as Technique"] },
-  { id: "gothic", label: "The Gothic", type: "concept", era: "cross-era", description: "Literature of terror, transgression, and the return of the repressed. Haunted spaces, doubles, excess, the monstrous.", thinkers: ["Walpole", "Radcliffe", "Shelley", "Poe", "Morrison"], works: ["Castle of Otranto", "Frankenstein", "Beloved"] },
-  { id: "unreliable_narrator", label: "Unreliable Narrator", type: "concept", era: "cross-era", description: "A narrator whose credibility is compromised — by self-deception, madness, bias, or deliberate manipulation of the reader.", thinkers: ["Booth", "Nabokov", "Ishiguro", "Poe"], works: ["Lolita", "The Remains of the Day", "The Tell-Tale Heart"] },
-  { id: "flaneur", label: "The Flâneur", type: "concept", era: "19c-mid", description: "The urban wanderer-observer. Detached spectatorship of modern city life as both aesthetic practice and philosophical stance.", thinkers: ["Baudelaire", "Benjamin", "Poe", "de Certeau"], works: ["The Painter of Modern Life", "The Arcades Project", "The Man of the Crowd"] },
-  { id: "carnival", label: "The Carnivalesque", type: "concept", era: "cross-era", description: "Bakhtin's concept of subversive laughter, grotesque bodies, and the inversion of hierarchies. The marketplace against the cathedral.", thinkers: ["Bakhtin", "Rabelais", "Rushdie", "Angela Carter"], works: ["Rabelais and His World", "Midnight's Children", "Nights at the Circus"] },
-  { id: "panopticon", label: "The Panopticon", type: "concept", era: "20c-late", description: "Foucault's model of disciplinary power: surveillance internalized. You behave because you might be watched, not because you are.", thinkers: ["Foucault", "Bentham", "Orwell", "Atwood"], works: ["Discipline and Punish", "1984", "The Handmaid's Tale"] },
-  { id: "double_consciousness", label: "Double Consciousness", type: "concept", era: "cross-era", description: "Du Bois's concept of seeing oneself through the eyes of the oppressor. The twoness of being Black and American — never fully either.", thinkers: ["Du Bois", "Fanon", "Ellison", "Morrison"], works: ["The Souls of Black Folk", "Invisible Man", "Black Skin White Masks"] },
-  { id: "ecriture_feminine", label: "Écriture Féminine", type: "concept", era: "20c-late", description: "Writing the body. Language that resists phallogocentric structure through rhythm, excess, jouissance, and the semiotic.", thinkers: ["Cixous", "Irigaray", "Kristeva"], works: ["The Laugh of the Medusa", "This Sex Which Is Not One", "Revolution in Poetic Language"] },
-  { id: "hauntology", label: "Hauntology", type: "concept", era: "21c", description: "Derrida's concept of the ghost that haunts the present — futures that never arrived, pasts that refuse to die. The spectre as ontological condition.", thinkers: ["Derrida", "Fisher", "Morrison", "Sebald"], works: ["Specters of Marx", "Ghosts of My Life", "Beloved", "Austerlitz"] },
-  { id: "palimpsest", label: "The Palimpsest", type: "concept", era: "cross-era", description: "A text written over another, where earlier layers bleed through. Metaphor for how history, memory, and identity are layered, never fully erased.", thinkers: ["Genette", "De Quincey", "Derrida", "Sebald"], works: ["Palimpsests", "Suspiria de Profundis", "The Rings of Saturn"] },
-  { id: "close_reading", label: "Close Reading", type: "concept", era: "20c-mid", description: "Rigorous attention to the formal elements of a text — diction, syntax, imagery, rhythm — as the primary method of interpretation.", thinkers: ["Richards", "Empson", "Brooks", "de Man"], works: ["Practical Criticism", "Seven Types of Ambiguity", "The Well Wrought Urn"] },
-  { id: "heteroglossia", label: "Heteroglossia", type: "concept", era: "cross-era", description: "Bakhtin's concept of multiple voices, languages, and social registers coexisting within a single text. The novel as a polyphonic form.", thinkers: ["Bakhtin", "Dostoevsky", "Joyce", "Rushdie"], works: ["The Dialogic Imagination", "Problems of Dostoevsky's Poetics", "Ulysses"] },
-
-  // ── NEW: GENRE / SPECULATIVE / HORROR CONCEPTS ──
-  { id: "cosmic_horror", label: "Cosmic Horror", type: "concept", era: "20c-early", description: "The insignificance of humanity before vast, indifferent, incomprehensible forces. Not malice but irrelevance. The universe doesn't hate you — it doesn't know you exist.", thinkers: ["Lovecraft", "Ligotti", "Machen", "Blackwood", "VanderMeer"], works: ["The Call of Cthulhu", "The Conspiracy Against the Human Race", "The Great God Pan", "Annihilation"] },
-  { id: "the_abject", label: "The Abject", type: "concept", era: "20c-late", description: "Kristeva's concept of what the self expels to establish its borders — corpses, bodily fluids, the in-between. Horror at the collapse of the boundary between self and other.", thinkers: ["Kristeva", "Bataille", "Clive Barker", "Cronenberg"], works: ["Powers of Horror", "Story of the Eye", "The Hellbound Heart"] },
-  { id: "cognitive_estrangement", label: "Cognitive Estrangement", type: "concept", era: "20c-mid", description: "Suvin's definition of science fiction: a novum (new thing) forces the reader to perceive their own reality from the outside. The genre's critical engine.", thinkers: ["Suvin", "Brecht", "Le Guin", "Miéville"], works: ["Metamorphoses of Science Fiction", "The Left Hand of Darkness", "Perdido Street Station"] },
-  { id: "the_numinous", label: "The Numinous", type: "concept", era: "cross-era", description: "Rudolf Otto's mysterium tremendum et fascinans — the sacred experienced as wholly other. Awe that is not aesthetic but ontological. The thing behind the veil.", thinkers: ["Otto", "Tolkien", "Lewis", "Le Guin", "M. John Harrison"], works: ["The Idea of the Holy", "On Fairy-Stories", "A Wizard of Earthsea"] },
-  { id: "secondary_creation", label: "Secondary Creation", type: "concept", era: "20c-mid", description: "Tolkien's concept of sub-creation: the author as maker of a consistent secondary world that possesses its own inner truth. The art of world-building as a moral and aesthetic act.", thinkers: ["Tolkien", "Le Guin", "Peake", "Jordan", "Jemisin"], works: ["On Fairy-Stories", "The Lord of the Rings", "Gormenghast", "The Fifth Season"] },
-  { id: "the_doppelganger", label: "The Doppelgänger", type: "concept", era: "cross-era", description: "The double, the shadow-self, the uncanny twin. Encounter with one's own otherness — mirror as abyss. From folklore through Romanticism to postmodern identity fracture.", thinkers: ["Hoffmann", "Dostoevsky", "Poe", "Saramago", "Nabokov"], works: ["The Sandman", "The Double", "William Wilson", "The Double (Saramago)"] },
-  { id: "liminality", label: "Liminality", type: "concept", era: "cross-era", description: "The threshold state — between life and death, human and animal, self and other, real and unreal. The space where transformation and horror both live.", thinkers: ["Turner", "van Gennep", "Barker", "Danielewski"], works: ["The Ritual Process", "The Rites of Passage", "The Hellbound Heart", "House of Leaves"] },
-  { id: "body_horror", label: "Body Horror", type: "concept", era: "20c-late", description: "The body as site of violation, mutation, and dissolution. Identity collapses when flesh becomes unrecognizable. The self betrayed by its own matter.", thinkers: ["Cronenberg", "Barker", "Shelley", "Kafka", "Otessa Moshfegh"], works: ["Videodrome", "The Metamorphosis", "Frankenstein", "The Hellbound Heart"] },
-  { id: "folk_horror", label: "Folk Horror", type: "concept", era: "cross-era", description: "The landscape remembers what you've forgotten. Pre-Christian ritual, rural isolation, the old gods still hungry beneath the soil. Civilization as a thin veneer.", thinkers: ["M.R. James", "Shirley Jackson", "Robert Eggers", "Adam Nevill"], works: ["The Lottery", "The Wicker Man", "The Witch", "The Ritual"] },
-  { id: "dystopia", label: "Dystopia", type: "concept", era: "20c-early", description: "The nightmare state perfected. Utopian logic carried to its totalitarian conclusion — control through language, surveillance, pleasure, or force.", thinkers: ["Orwell", "Huxley", "Zamyatin", "Atwood", "Butler"], works: ["1984", "Brave New World", "We", "The Handmaid's Tale", "Parable of the Sower"] },
-  { id: "the_fantastic", label: "The Fantastic", type: "concept", era: "cross-era", description: "Todorov's concept: the moment of hesitation between natural and supernatural explanations. The reader (and character) suspended between two orders of reality.", thinkers: ["Todorov", "Jackson (Rosemary)", "Cortázar", "Borges"], works: ["The Fantastic", "Fantasy: The Literature of Subversion", "Blow-Up", "Tlön, Uqbar, Orbis Tertius"] },
-  { id: "the_other", label: "The Other / Alterity", type: "concept", era: "cross-era", description: "That which is not-self, not-us. From Hegel's dialectic through Levinas's ethics to the monster at the gate. Every boundary implies what it excludes.", thinkers: ["Levinas", "Said", "Fanon", "Le Guin", "Butler"], works: ["Totality and Infinity", "Orientalism", "The Left Hand of Darkness", "Lilith's Brood"] },
-  { id: "apocalypticism", label: "Apocalypticism", type: "concept", era: "cross-era", description: "The end as revelation. From biblical eschatology to nuclear anxiety to climate collapse. Destruction as the precondition for seeing clearly.", thinkers: ["McCarthy", "Shelley (Mary)", "Ballard", "Octavia Butler", "Atwood"], works: ["The Road", "The Last Man", "The Drowned World", "Parable of the Sower"] },
-  { id: "epistemic_horror", label: "Epistemic Horror", type: "concept", era: "cross-era", description: "The horror of knowing — or of discovering that knowledge itself is the wound. What you learn cannot be unlearned, and understanding is indistinguishable from contamination.", thinkers: ["Lovecraft", "Ligotti", "Danielewski", "VanderMeer", "Borges"], works: ["House of Leaves", "Annihilation", "The Library of Babel", "The Conspiracy Against the Human Race"] },
-  { id: "the_monstrous", label: "The Monstrous", type: "concept", era: "cross-era", description: "The monster as boundary-crosser — it violates categories. Neither alive nor dead, human nor animal, self nor other. Cohen: the monster always escapes.", thinkers: ["Cohen", "Shelley", "Kafka", "Angela Carter", "Miéville"], works: ["Monster Theory", "Frankenstein", "The Metamorphosis", "The Bloody Chamber", "Perdido Street Station"] },
-  { id: "the_labyrinth", label: "The Labyrinth", type: "concept", era: "cross-era", description: "Structure as trap. The maze that is also a text, a mind, a city, a bureaucracy. You are always already inside it. There may be no center and no exit.", thinkers: ["Borges", "Kafka", "Danielewski", "Eco", "Piranesi (Clarke)"], works: ["The Garden of Forking Paths", "The Trial", "House of Leaves", "The Name of the Rose", "Piranesi"] },
-  { id: "mythopoeia", label: "Mythopoeia", type: "concept", era: "cross-era", description: "The deliberate creation of myth. Not retelling old myths but forging new ones with the weight and resonance of the ancient — myth as a living literary act.", thinkers: ["Tolkien", "Blake", "Le Guin", "Jemisin", "Peake"], works: ["The Silmarillion", "The Marriage of Heaven and Hell", "Earthsea", "The Broken Earth", "Gormenghast"] },
-  { id: "psychogeography", label: "Psychogeography", type: "concept", era: "20c-late", description: "The emotional and psychological effects of geographic environment. The city as palimpsest of memory, power, and desire. Walking as a form of reading.", thinkers: ["Debord", "Sinclair", "Benjamin", "Perec", "Sebald"], works: ["Theory of the Dérive", "London Orbital", "The Arcades Project", "Species of Spaces", "The Rings of Saturn"] },
-  { id: "the_weird", label: "The Weird", type: "concept", era: "cross-era", description: "Fisher's definition: that which does not belong. Not supernatural vs. natural but the wrongness of presence — something here that should not be. The outside pressing in.", thinkers: ["Mark Fisher", "Lovecraft", "Miéville", "VanderMeer", "M. John Harrison"], works: ["The Weird and the Eerie", "Annihilation", "The Call of Cthulhu", "Light"] },
-  { id: "the_eerie", label: "The Eerie", type: "concept", era: "cross-era", description: "Fisher's counterpart to the weird: failure of absence or failure of presence. Something where there should be nothing, or nothing where there should be something. Landscapes emptied of meaning.", thinkers: ["Mark Fisher", "Sebald", "Tarkovsky", "M.R. James"], works: ["The Weird and the Eerie", "The Rings of Saturn", "Stalker", "Oh, Whistle, and I'll Come to You"] },
+  { id: "magical_realism", label: "Magical Realism", type: "movement", era: "20c-late", description: "The marvelous treated as mundane. Reality and fantasy coexist without contradiction.", thinkers: ["García Márquez", "Allende", "Rushdie", "Carpentier"], works: ["One Hundred Years of Solitude", "Midnight's Children"] },
+  { id: "feminist_lit", label: "Feminist Literary Thought", type: "movement", era: "20c-late", description: "Interrogation of gender in literary production, canon formation, and textual meaning.", thinkers: ["de Beauvoir", "Woolf", "Cixous", "hooks", "Gilbert & Gubar"], works: ["A Room of One's Own", "The Second Sex", "The Laugh of the Medusa"] },
+  { id: "cyberpunk", label: "Cyberpunk", type: "movement", era: "20c-late", description: "High tech, low life. Corporate dystopia, body modification, virtual reality, street-level survival.", thinkers: ["Gibson", "Sterling", "Dick", "Stephenson", "Cadigan"], works: ["Neuromancer", "Do Androids Dream of Electric Sheep?", "Snow Crash"] },
+  { id: "new_weird", label: "New Weird", type: "movement", era: "21c", description: "Post-Lovecraftian genre-blending: fantasy, SF, and horror collapsed together. Politically aware, ecologically anxious.", thinkers: ["Miéville", "VanderMeer", "M. John Harrison", "Catling"], works: ["Perdido Street Station", "Annihilation", "The Vorrh"] },
+  { id: "afrofuturism", label: "Afrofuturism", type: "movement", era: "21c", description: "Black speculative thought blending science fiction, mythology, and Afrodiasporic traditions.", thinkers: ["Butler", "Jemisin", "Sun Ra", "Eshun", "Okorafor"], works: ["Kindred", "The Fifth Season", "Space Is the Place", "Binti"] },
+  { id: "the_sublime", label: "The Sublime", type: "concept", era: "cross-era", description: "Experience of awe, terror, and vastness that exceeds rational comprehension.", thinkers: ["Longinus", "Burke", "Kant", "Shelley"], works: ["On the Sublime", "A Philosophical Enquiry"] },
+  { id: "mimesis", label: "Mimesis", type: "concept", era: "cross-era", description: "Art as imitation of reality. Central tension from Plato's suspicion to Aristotle's defense.", thinkers: ["Plato", "Aristotle", "Auerbach"], works: ["Republic", "Poetics", "Mimesis"] },
+  { id: "catharsis", label: "Catharsis", type: "concept", era: "cross-era", description: "Emotional purgation through art, especially tragedy. Pity and fear achieving release.", thinkers: ["Aristotle", "Bernays", "Freud"], works: ["Poetics"] },
+  { id: "alienation", label: "Alienation", type: "concept", era: "cross-era", description: "Estrangement from self, society, labor, or meaning.", thinkers: ["Marx", "Kafka", "Brecht", "Camus"], works: ["Economic and Philosophic Manuscripts", "The Metamorphosis"] },
+  { id: "the_uncanny", label: "The Uncanny", type: "concept", era: "cross-era", description: "The familiar made strange. What should have remained hidden but has come to light.", thinkers: ["Freud", "Hoffmann", "Todorov", "Kristeva"], works: ["The Uncanny", "The Sandman"] },
+  { id: "intertextuality", label: "Intertextuality", type: "concept", era: "cross-era", description: "All texts exist in relation to other texts. Meaning through networks of reference.", thinkers: ["Kristeva", "Barthes", "Genette", "Bakhtin"], works: ["Desire in Language", "S/Z", "Palimpsests"] },
+  { id: "death_of_author", label: "Death of the Author", type: "concept", era: "20c-late", description: "The author's intentions are irrelevant. The reader produces the text's significance.", thinkers: ["Barthes", "Foucault", "Derrida"], works: ["Death of the Author", "What Is an Author?"] },
+  { id: "stream_of_consciousness", label: "Stream of Consciousness", type: "concept", era: "20c-early", description: "Rendering the continuous flow of a character's thoughts, sensations, and associations.", thinkers: ["James (William)", "Joyce", "Woolf", "Faulkner"], works: ["Ulysses", "Mrs Dalloway", "The Sound and the Fury"] },
+  { id: "the_absurd", label: "The Absurd", type: "concept", era: "20c-mid", description: "The conflict between human desire for meaning and the universe's indifference.", thinkers: ["Camus", "Beckett", "Ionesco", "Kierkegaard"], works: ["The Myth of Sisyphus", "Waiting for Godot"] },
+  { id: "defamiliarization", label: "Defamiliarization", type: "concept", era: "20c-early", description: "Making the familiar strange to force fresh perception. Shklovsky's ostranenie.", thinkers: ["Shklovsky", "Brecht", "the Formalists"], works: ["Art as Technique"] },
+  { id: "gothic", label: "The Gothic", type: "concept", era: "cross-era", description: "Literature of terror, transgression, and the return of the repressed.", thinkers: ["Walpole", "Radcliffe", "Shelley", "Poe", "Morrison"], works: ["Castle of Otranto", "Frankenstein", "Beloved"] },
+  { id: "unreliable_narrator", label: "Unreliable Narrator", type: "concept", era: "cross-era", description: "A narrator whose credibility is compromised — by self-deception, madness, or manipulation.", thinkers: ["Booth", "Nabokov", "Ishiguro", "Poe"], works: ["Lolita", "The Remains of the Day"] },
+  { id: "flaneur", label: "The Flâneur", type: "concept", era: "19c-mid", description: "The urban wanderer-observer. Detached spectatorship as aesthetic practice.", thinkers: ["Baudelaire", "Benjamin", "Poe", "de Certeau"], works: ["The Painter of Modern Life", "The Arcades Project"] },
+  { id: "carnival", label: "The Carnivalesque", type: "concept", era: "cross-era", description: "Subversive laughter, grotesque bodies, inversion of hierarchies.", thinkers: ["Bakhtin", "Rabelais", "Rushdie", "Angela Carter"], works: ["Rabelais and His World", "Nights at the Circus"] },
+  { id: "panopticon", label: "The Panopticon", type: "concept", era: "20c-late", description: "Foucault's model of disciplinary power: surveillance internalized.", thinkers: ["Foucault", "Bentham", "Orwell", "Atwood"], works: ["Discipline and Punish", "1984"] },
+  { id: "double_consciousness", label: "Double Consciousness", type: "concept", era: "cross-era", description: "Seeing oneself through the eyes of the oppressor. The twoness of being Black and American.", thinkers: ["Du Bois", "Fanon", "Ellison", "Morrison"], works: ["The Souls of Black Folk", "Invisible Man"] },
+  { id: "ecriture_feminine", label: "Écriture Féminine", type: "concept", era: "20c-late", description: "Writing the body. Language resisting phallogocentric structure through rhythm and excess.", thinkers: ["Cixous", "Irigaray", "Kristeva"], works: ["The Laugh of the Medusa"] },
+  { id: "hauntology", label: "Hauntology", type: "concept", era: "21c", description: "Futures that never arrived, pasts that refuse to die. The spectre as ontological condition.", thinkers: ["Derrida", "Fisher", "Morrison", "Sebald"], works: ["Specters of Marx", "Ghosts of My Life"] },
+  { id: "palimpsest", label: "The Palimpsest", type: "concept", era: "cross-era", description: "A text written over another, where earlier layers bleed through.", thinkers: ["Genette", "de Quincey", "Derrida", "Sebald"], works: ["Palimpsests", "The Rings of Saturn"] },
+  { id: "close_reading", label: "Close Reading", type: "concept", era: "20c-mid", description: "Rigorous attention to formal elements as primary method of interpretation.", thinkers: ["Richards", "Empson", "Brooks", "de Man"], works: ["Practical Criticism", "Seven Types of Ambiguity"] },
+  { id: "heteroglossia", label: "Heteroglossia", type: "concept", era: "cross-era", description: "Multiple voices and social registers coexisting within a single text.", thinkers: ["Bakhtin", "Dostoevsky", "Joyce", "Rushdie"], works: ["The Dialogic Imagination", "Ulysses"] },
+  { id: "cosmic_horror", label: "Cosmic Horror", type: "concept", era: "20c-early", description: "Humanity's insignificance before vast, indifferent forces. The universe doesn't know you exist.", thinkers: ["Lovecraft", "Ligotti", "Machen", "Blackwood", "VanderMeer"], works: ["The Call of Cthulhu", "The Conspiracy Against the Human Race"] },
+  { id: "the_abject", label: "The Abject", type: "concept", era: "20c-late", description: "What the self expels to establish its borders. Horror at boundary collapse.", thinkers: ["Kristeva", "Bataille", "Clive Barker", "Cronenberg"], works: ["Powers of Horror", "Story of the Eye"] },
+  { id: "cognitive_estrangement", label: "Cognitive Estrangement", type: "concept", era: "20c-mid", description: "Suvin's SF definition: a novum forces perceiving your own reality from outside.", thinkers: ["Suvin", "Brecht", "Le Guin", "Miéville"], works: ["Metamorphoses of Science Fiction"] },
+  { id: "the_numinous", label: "The Numinous", type: "concept", era: "cross-era", description: "Otto's mysterium tremendum — the sacred as wholly other. Ontological awe.", thinkers: ["Otto", "Tolkien", "Lewis", "Le Guin"], works: ["The Idea of the Holy", "On Fairy-Stories"] },
+  { id: "secondary_creation", label: "Secondary Creation", type: "concept", era: "20c-mid", description: "Tolkien's sub-creation: a consistent secondary world with inner truth.", thinkers: ["Tolkien", "Le Guin", "Peake", "Jemisin"], works: ["On Fairy-Stories", "The Lord of the Rings"] },
+  { id: "the_doppelganger", label: "The Doppelgänger", type: "concept", era: "cross-era", description: "The double, the shadow-self. Encounter with one's own otherness.", thinkers: ["Hoffmann", "Dostoevsky", "Poe", "Saramago", "Nabokov"], works: ["The Sandman", "The Double", "William Wilson"] },
+  { id: "liminality", label: "Liminality", type: "concept", era: "cross-era", description: "The threshold state — between life and death, human and animal, real and unreal.", thinkers: ["Turner", "van Gennep", "Barker", "Danielewski"], works: ["The Ritual Process", "House of Leaves"] },
+  { id: "body_horror", label: "Body Horror", type: "concept", era: "20c-late", description: "The body as site of violation, mutation, dissolution. Flesh made unrecognizable.", thinkers: ["Cronenberg", "Barker", "Shelley", "Kafka"], works: ["Videodrome", "The Metamorphosis", "Frankenstein"] },
+  { id: "folk_horror", label: "Folk Horror", type: "concept", era: "cross-era", description: "The landscape remembers what you've forgotten. Pre-Christian ritual, the old gods still hungry.", thinkers: ["M.R. James", "Shirley Jackson", "Robert Eggers", "Adam Nevill"], works: ["The Lottery", "The Wicker Man", "The Witch"] },
+  { id: "dystopia", label: "Dystopia", type: "concept", era: "20c-early", description: "The nightmare state perfected. Utopian logic carried to totalitarian conclusion.", thinkers: ["Orwell", "Huxley", "Zamyatin", "Atwood", "Butler"], works: ["1984", "Brave New World", "We", "The Handmaid's Tale"] },
+  { id: "the_fantastic", label: "The Fantastic", type: "concept", era: "cross-era", description: "Todorov: hesitation between natural and supernatural explanations.", thinkers: ["Todorov", "Jackson (Rosemary)", "Cortázar", "Borges"], works: ["The Fantastic", "Blow-Up"] },
+  { id: "the_other", label: "The Other / Alterity", type: "concept", era: "cross-era", description: "That which is not-self. Every boundary implies what it excludes.", thinkers: ["Levinas", "Said", "Fanon", "Le Guin", "Butler"], works: ["Totality and Infinity", "Orientalism"] },
+  { id: "apocalypticism", label: "Apocalypticism", type: "concept", era: "cross-era", description: "The end as revelation. From biblical eschatology to climate collapse.", thinkers: ["McCarthy", "Shelley (Mary)", "Ballard", "Octavia Butler"], works: ["The Road", "The Last Man", "Parable of the Sower"] },
+  { id: "epistemic_horror", label: "Epistemic Horror", type: "concept", era: "cross-era", description: "The horror of knowing. Understanding as contamination.", thinkers: ["Lovecraft", "Ligotti", "Danielewski", "VanderMeer", "Borges"], works: ["House of Leaves", "Annihilation", "The Library of Babel"] },
+  { id: "the_monstrous", label: "The Monstrous", type: "concept", era: "cross-era", description: "The monster as boundary-crosser. It violates categories. The monster always escapes.", thinkers: ["Cohen", "Shelley", "Kafka", "Angela Carter", "Miéville"], works: ["Monster Theory", "Frankenstein", "The Bloody Chamber"] },
+  { id: "the_labyrinth", label: "The Labyrinth", type: "concept", era: "cross-era", description: "Structure as trap. The maze that is also a text, a mind, a city.", thinkers: ["Borges", "Kafka", "Danielewski", "Eco"], works: ["The Garden of Forking Paths", "The Trial", "House of Leaves"] },
+  { id: "mythopoeia", label: "Mythopoeia", type: "concept", era: "cross-era", description: "Deliberate creation of myth. Forging new ones with the weight of the ancient.", thinkers: ["Tolkien", "Blake", "Le Guin", "Jemisin", "Peake"], works: ["The Silmarillion", "Earthsea", "The Broken Earth"] },
+  { id: "psychogeography", label: "Psychogeography", type: "concept", era: "20c-late", description: "Emotional effects of geographic environment. The city as palimpsest. Walking as reading.", thinkers: ["Debord", "Sinclair", "Benjamin", "Perec", "Sebald"], works: ["Theory of the Dérive", "The Rings of Saturn"] },
+  { id: "the_weird", label: "The Weird", type: "concept", era: "cross-era", description: "Fisher: that which does not belong. The wrongness of presence. The outside pressing in.", thinkers: ["Mark Fisher", "Lovecraft", "Miéville", "VanderMeer"], works: ["The Weird and the Eerie", "Annihilation"] },
+  { id: "the_eerie", label: "The Eerie", type: "concept", era: "cross-era", description: "Failure of absence or presence. Something where there should be nothing. Landscapes emptied.", thinkers: ["Mark Fisher", "Sebald", "Tarkovsky", "M.R. James"], works: ["The Weird and the Eerie", "Stalker"] },
 ];
 
 const EDGES = [
-  // ── Historical / Movement Flow ──
   { source: "classicism", target: "enlightenment", type: "influenced", label: "rationalist inheritance" },
   { source: "enlightenment", target: "romanticism", type: "reacted_against", label: "revolt against reason" },
   { source: "romanticism", target: "transcendentalism", type: "influenced", label: "American branch" },
@@ -122,8 +265,6 @@ const EDGES = [
   { source: "cyberpunk", target: "new_weird", type: "synthesized", label: "genre-blending" },
   { source: "weird_fiction", target: "new_wave_sf", type: "influenced", label: "the alien within" },
   { source: "new_wave_sf", target: "afrofuturism", type: "influenced", label: "social SF" },
-
-  // ── Concept ↔ Movement ──
   { source: "the_sublime", target: "romanticism", type: "central_to", label: "core aesthetic" },
   { source: "the_sublime", target: "gothic", type: "influenced", label: "terror & awe" },
   { source: "mimesis", target: "classicism", type: "central_to", label: "foundational principle" },
@@ -175,8 +316,6 @@ const EDGES = [
   { source: "close_reading", target: "poststructuralism", type: "influenced", label: "deconstructive reading" },
   { source: "heteroglossia", target: "postmodernism", type: "influenced", label: "many voices" },
   { source: "heteroglossia", target: "postcolonialism", type: "influenced", label: "linguistic resistance" },
-
-  // ── Genre / Speculative / Horror Concept Edges ──
   { source: "cosmic_horror", target: "weird_fiction", type: "central_to", label: "defining mode" },
   { source: "cosmic_horror", target: "the_sublime", type: "synthesized", label: "awe without redemption" },
   { source: "cosmic_horror", target: "the_absurd", type: "synthesized", label: "meaningless cosmos" },
@@ -228,7 +367,6 @@ const EDGES = [
   { source: "the_monstrous", target: "carnival", type: "synthesized", label: "grotesque body" },
   { source: "the_labyrinth", target: "postmodernism", type: "central_to", label: "structure as prison" },
   { source: "the_labyrinth", target: "the_fantastic", type: "influenced", label: "impossible architecture" },
-  { source: "the_labyrinth", target: "epistemic_horror", type: "synthesized", label: "no way out" },
   { source: "mythopoeia", target: "romanticism", type: "influenced", label: "myth-making impulse" },
   { source: "mythopoeia", target: "afrofuturism", type: "synthesized", label: "new mythologies" },
   { source: "mythopoeia", target: "magical_realism", type: "synthesized", label: "myth alive in the present" },
@@ -243,389 +381,135 @@ const EDGES = [
   { source: "the_eerie", target: "hauntology", type: "synthesized", label: "absent futures" },
 ];
 
-const EDGE_COLORS = {
-  influenced: "#6B8AFF",
-  reacted_against: "#FF6B6B",
-  synthesized: "#A78BFA",
-  extended: "#34D399",
-  central_to: "#FBBF24",
-};
+const EDGE_COLORS = { influenced: "#6B8AFF", reacted_against: "#FF6B6B", synthesized: "#A78BFA", extended: "#34D399", central_to: "#FBBF24" };
+const EDGE_LABELS_DISPLAY = { influenced: "Influenced", reacted_against: "Reacted Against", synthesized: "Synthesized", extended: "Extended", central_to: "Central To" };
+const NC = { movement: { fill: "#1a1a2e", stroke: "#6B8AFF", text: "#e0e0ff" }, concept: { fill: "#1a1a2e", stroke: "#A78BFA", text: "#e0d0ff" } };
 
-const EDGE_LABELS = {
-  influenced: "Influenced",
-  reacted_against: "Reacted Against",
-  synthesized: "Synthesized",
-  extended: "Extended",
-  central_to: "Central To",
-};
+const linkStyle = { color: "inherit", textDecoration: "none", transition: "color 0.15s" };
 
-const NODE_COLORS = {
-  movement: { fill: "#1a1a2e", stroke: "#6B8AFF", text: "#e0e0ff" },
-  concept: { fill: "#1a1a2e", stroke: "#A78BFA", text: "#e0d0ff" },
-};
-
-export default function LiteraryConceptMap() {
+export default function LiteraryConceptMap2DLinked() {
   const svgRef = useRef(null);
-  const simRef = useRef(null);
   const [selected, setSelected] = useState(null);
   const [filter, setFilter] = useState("all");
   const [edgeFilter, setEdgeFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [dimensions, setDimensions] = useState({ w: 900, h: 650 });
-  const [hoveredNode, setHoveredNode] = useState(null);
-  const zoomRef = useRef(null);
+  const [dims, setDims] = useState({ w: 900, h: 650 });
 
   useEffect(() => {
-    const update = () => {
-      const w = Math.min(window.innerWidth - 20, 1400);
-      const h = Math.min(window.innerHeight - 20, 900);
-      setDimensions({ w: Math.max(w, 600), h: Math.max(h, 450) });
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    const u = () => { setDims({ w: Math.max(Math.min(window.innerWidth - 20, 1400), 600), h: Math.max(Math.min(window.innerHeight - 20, 900), 450) }); };
+    u(); window.addEventListener("resize", u); return () => window.removeEventListener("resize", u);
   }, []);
 
   useEffect(() => {
     if (!svgRef.current) return;
-
-    const { w, h } = dimensions;
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-
+    const { w, h } = dims;
+    const svg = d3.select(svgRef.current); svg.selectAll("*").remove();
     const defs = svg.append("defs");
-
-    const glow = defs.append("filter").attr("id", "glow");
-    glow.append("feGaussianBlur").attr("stdDeviation", "3").attr("result", "blur");
-    const merge = glow.append("feMerge");
-    merge.append("feMergeNode").attr("in", "blur");
-    merge.append("feMergeNode").attr("in", "SourceGraphic");
-
-    Object.keys(EDGE_COLORS).forEach(type => {
-      defs.append("marker")
-        .attr("id", `arrow-${type}`)
-        .attr("viewBox", "0 -5 10 10")
-        .attr("refX", 28)
-        .attr("refY", 0)
-        .attr("markerWidth", 5)
-        .attr("markerHeight", 5)
-        .attr("orient", "auto")
-        .append("path")
-        .attr("d", "M0,-4L10,0L0,4")
-        .attr("fill", EDGE_COLORS[type])
-        .attr("opacity", 0.7);
-    });
-
+    const gl = defs.append("filter").attr("id", "glow"); gl.append("feGaussianBlur").attr("stdDeviation", "3").attr("result", "blur"); const mg = gl.append("feMerge"); mg.append("feMergeNode").attr("in", "blur"); mg.append("feMergeNode").attr("in", "SourceGraphic");
+    Object.keys(EDGE_COLORS).forEach(t => { defs.append("marker").attr("id", `a-${t}`).attr("viewBox", "0 -5 10 10").attr("refX", 28).attr("refY", 0).attr("markerWidth", 5).attr("markerHeight", 5).attr("orient", "auto").append("path").attr("d", "M0,-4L10,0L0,4").attr("fill", EDGE_COLORS[t]).attr("opacity", 0.7); });
     const nodes = NODES.map(n => ({ ...n, x: w/2 + (Math.random()-0.5)*600, y: h/2 + (Math.random()-0.5)*500 }));
     const edges = EDGES.map(e => ({ ...e }));
-
     const g = svg.append("g");
-
-    const zoom = d3.zoom()
-      .scaleExtent([0.15, 4])
-      .on("zoom", (event) => g.attr("transform", event.transform));
-    svg.call(zoom);
-    zoomRef.current = { zoom, svg };
-
-    svg.call(zoom.transform, d3.zoomIdentity.translate(w * 0.15, h * 0.15).scale(0.7));
-
-    const linkG = g.append("g").attr("class", "links");
-    const linkLabelG = g.append("g").attr("class", "link-labels");
-    const nodeG = g.append("g").attr("class", "nodes");
-
-    const link = linkG.selectAll("line")
-      .data(edges)
-      .join("line")
-      .attr("stroke", d => EDGE_COLORS[d.type] || "#444")
-      .attr("stroke-width", 1.2)
-      .attr("stroke-opacity", 0.3)
-      .attr("marker-end", d => `url(#arrow-${d.type})`);
-
-    const linkLabel = linkLabelG.selectAll("text")
-      .data(edges)
-      .join("text")
-      .text(d => d.label)
-      .attr("font-size", 7)
-      .attr("fill", "#555")
-      .attr("text-anchor", "middle")
-      .attr("dy", -3)
-      .style("pointer-events", "none")
-      .style("opacity", 0);
-
-    const node = nodeG.selectAll("g")
-      .data(nodes)
-      .join("g")
-      .style("cursor", "pointer")
-      .call(d3.drag()
-        .on("start", (event, d) => {
-          if (!event.active) sim.alphaTarget(0.3).restart();
-          d.fx = d.x; d.fy = d.y;
-        })
-        .on("drag", (event, d) => {
-          d.fx = event.x; d.fy = event.y;
-        })
-        .on("end", (event, d) => {
-          if (!event.active) sim.alphaTarget(0);
-          d.fx = null; d.fy = null;
-        }));
-
-    node.append("circle")
-      .attr("r", d => d.type === "movement" ? 18 : 13)
-      .attr("fill", d => NODE_COLORS[d.type].fill)
-      .attr("stroke", d => NODE_COLORS[d.type].stroke)
-      .attr("stroke-width", 1.5)
-      .attr("filter", "url(#glow)");
-
-    node.append("text")
-      .text(d => d.label)
-      .attr("text-anchor", "middle")
-      .attr("dy", d => d.type === "movement" ? 30 : 24)
-      .attr("font-size", d => d.type === "movement" ? 9 : 7.5)
-      .attr("font-weight", d => d.type === "movement" ? 600 : 400)
-      .attr("fill", d => NODE_COLORS[d.type].text)
-      .style("pointer-events", "none");
-
-    node.append("text")
-      .text(d => {
-        const words = d.label.replace(/^The /, "").split(" ");
-        return words.length === 1 ? words[0].slice(0,3).toUpperCase() : words.map(w => w[0]).join("").slice(0, 3).toUpperCase();
-      })
-      .attr("text-anchor", "middle")
-      .attr("dy", 3)
-      .attr("font-size", 7)
-      .attr("font-weight", 700)
-      .attr("fill", d => NODE_COLORS[d.type].stroke)
-      .style("pointer-events", "none")
-      .style("opacity", 0.8);
-
-    node.on("click", (event, d) => {
-      event.stopPropagation();
-      setSelected(prev => prev?.id === d.id ? null : d);
+    const zm = d3.zoom().scaleExtent([0.15, 4]).on("zoom", ev => g.attr("transform", ev.transform));
+    svg.call(zm); svg.call(zm.transform, d3.zoomIdentity.translate(w*0.1, h*0.1).scale(0.8));
+    const lG = g.append("g").attr("class", "links"), llG = g.append("g").attr("class", "link-labels"), nG = g.append("g").attr("class", "nodes");
+    const lk = lG.selectAll("line").data(edges).join("line").attr("stroke", d => EDGE_COLORS[d.type]).attr("stroke-width", 1.2).attr("stroke-opacity", 0.3).attr("marker-end", d => `url(#a-${d.type})`);
+    const ll = llG.selectAll("text").data(edges).join("text").text(d => d.label).attr("font-size", 7).attr("fill", "#555").attr("text-anchor", "middle").attr("dy", -3).style("pointer-events", "none").style("opacity", 0);
+    const nd = nG.selectAll("g").data(nodes).join("g").style("cursor", "pointer")
+      .call(d3.drag().on("start", (ev, d) => { if (!ev.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; }).on("drag", (ev, d) => { d.fx=ev.x; d.fy=ev.y; }).on("end", (ev, d) => { if (!ev.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+    nd.append("circle").attr("r", d => d.type === "movement" ? 18 : 13).attr("fill", d => NC[d.type].fill).attr("stroke", d => NC[d.type].stroke).attr("stroke-width", 1.5).attr("filter", "url(#glow)");
+    nd.append("text").text(d => d.label).attr("text-anchor", "middle").attr("dy", d => d.type === "movement" ? 30 : 24).attr("font-size", d => d.type === "movement" ? 9 : 7.5).attr("font-weight", d => d.type === "movement" ? 600 : 400).attr("fill", d => NC[d.type].text).style("pointer-events", "none");
+    nd.append("text").text(d => { const ws = d.label.replace(/^The /, "").split(" "); return ws.length === 1 ? ws[0].slice(0,3).toUpperCase() : ws.map(x => x[0]).join("").slice(0,3).toUpperCase(); }).attr("text-anchor", "middle").attr("dy", 3).attr("font-size", 7).attr("font-weight", 700).attr("fill", d => NC[d.type].stroke).style("pointer-events", "none").style("opacity", 0.8);
+    nd.on("click", (ev, d) => { ev.stopPropagation(); setSelected(p => p?.id === d.id ? null : d); });
+    nd.on("mouseenter", (ev, d) => {
+      const cn = new Set(); edges.forEach(e => { const s = typeof e.source === "object" ? e.source.id : e.source; const t = typeof e.target === "object" ? e.target.id : e.target; if (s === d.id) cn.add(t); if (t === d.id) cn.add(s); }); cn.add(d.id);
+      nd.style("opacity", n => cn.has(n.id) ? 1 : 0.06);
+      lk.style("opacity", e => { const s = typeof e.source === "object" ? e.source.id : e.source; const t = typeof e.target === "object" ? e.target.id : e.target; return (s === d.id || t === d.id) ? 0.8 : 0.02; }).attr("stroke-width", e => { const s = typeof e.source === "object" ? e.source.id : e.source; const t = typeof e.target === "object" ? e.target.id : e.target; return (s === d.id || t === d.id) ? 2.5 : 1.2; });
+      ll.style("opacity", e => { const s = typeof e.source === "object" ? e.source.id : e.source; const t = typeof e.target === "object" ? e.target.id : e.target; return (s === d.id || t === d.id) ? 1 : 0; });
     });
-
-    node.on("mouseenter", (event, d) => {
-      setHoveredNode(d.id);
-      const connected = new Set();
-      edges.forEach(e => {
-        const sid = typeof e.source === "object" ? e.source.id : e.source;
-        const tid = typeof e.target === "object" ? e.target.id : e.target;
-        if (sid === d.id) connected.add(tid);
-        if (tid === d.id) connected.add(sid);
-      });
-      connected.add(d.id);
-
-      node.style("opacity", n => connected.has(n.id) ? 1 : 0.06);
-      link.style("opacity", e => {
-        const sid = typeof e.source === "object" ? e.source.id : e.source;
-        const tid = typeof e.target === "object" ? e.target.id : e.target;
-        return (sid === d.id || tid === d.id) ? 0.8 : 0.02;
-      }).attr("stroke-width", e => {
-        const sid = typeof e.source === "object" ? e.source.id : e.source;
-        const tid = typeof e.target === "object" ? e.target.id : e.target;
-        return (sid === d.id || tid === d.id) ? 2.5 : 1.2;
-      });
-      linkLabel.style("opacity", e => {
-        const sid = typeof e.source === "object" ? e.source.id : e.source;
-        const tid = typeof e.target === "object" ? e.target.id : e.target;
-        return (sid === d.id || tid === d.id) ? 1 : 0;
-      });
-    });
-
-    node.on("mouseleave", () => {
-      setHoveredNode(null);
-      node.style("opacity", 1);
-      link.style("opacity", 0.3).attr("stroke-width", 1.2);
-      linkLabel.style("opacity", 0);
-    });
-
+    nd.on("mouseleave", () => { nd.style("opacity", 1); lk.style("opacity", 0.3).attr("stroke-width", 1.2); ll.style("opacity", 0); });
     svg.on("click", () => setSelected(null));
-
-    const sim = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(edges).id(d => d.id).distance(100).strength(0.25))
-      .force("charge", d3.forceManyBody().strength(-220))
-      .force("center", d3.forceCenter(w / 2, h / 2))
-      .force("collision", d3.forceCollide().radius(30))
-      .force("x", d3.forceX(w / 2).strength(0.025))
-      .force("y", d3.forceY(h / 2).strength(0.025));
-
-    sim.on("tick", () => {
-      link
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y);
-      linkLabel
-        .attr("x", d => (d.source.x + d.target.x) / 2)
-        .attr("y", d => (d.source.y + d.target.y) / 2);
-      node.attr("transform", d => `translate(${d.x},${d.y})`);
-    });
-
-    simRef.current = sim;
-
+    const sim = d3.forceSimulation(nodes).force("link", d3.forceLink(edges).id(d => d.id).distance(100).strength(0.25)).force("charge", d3.forceManyBody().strength(-220)).force("center", d3.forceCenter(w/2, h/2)).force("collision", d3.forceCollide().radius(30)).force("x", d3.forceX(w/2).strength(0.025)).force("y", d3.forceY(h/2).strength(0.025));
+    sim.on("tick", () => { lk.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y); ll.attr("x", d => (d.source.x+d.target.x)/2).attr("y", d => (d.source.y+d.target.y)/2); nd.attr("transform", d => `translate(${d.x},${d.y})`); });
     return () => sim.stop();
-  }, [dimensions]);
+  }, [dims]);
 
   useEffect(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
-
-    svg.selectAll(".nodes g").style("opacity", function(d) {
-      let show = true;
-      if (filter !== "all") show = d.type === filter;
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        const match = d.label.toLowerCase().includes(term) ||
-          d.description?.toLowerCase().includes(term) ||
-          d.thinkers?.some(t => t.toLowerCase().includes(term)) ||
-          d.works?.some(w => w.toLowerCase().includes(term));
-        show = show && match;
-      }
-      return show ? 1 : 0.05;
-    });
-
-    svg.selectAll(".links line").each(function(d) {
-      const el = d3.select(this);
-      const sid = typeof d.source === "object" ? d.source.id : d.source;
-      const tid = typeof d.target === "object" ? d.target.id : d.target;
-      const sNode = NODES.find(n => n.id === sid);
-      const tNode = NODES.find(n => n.id === tid);
-
-      let show = true;
-      if (filter !== "all") show = sNode?.type === filter || tNode?.type === filter;
-      if (edgeFilter !== "all") show = show && d.type === edgeFilter;
-      el.style("opacity", show ? 0.3 : 0.015);
-    });
+    svg.selectAll(".nodes g").style("opacity", function(d) { let s = true; if (filter !== "all") s = d.type === filter; if (searchTerm) { const t = searchTerm.toLowerCase(); s = s && (d.label.toLowerCase().includes(t) || d.description?.toLowerCase().includes(t) || d.thinkers?.some(x => x.toLowerCase().includes(t)) || d.works?.some(x => x.toLowerCase().includes(t))); } return s ? 1 : 0.05; });
+    svg.selectAll(".links line").each(function(d) { const el = d3.select(this); const s = typeof d.source === "object" ? d.source.id : d.source; const t = typeof d.target === "object" ? d.target.id : d.target; const sN = NODES.find(n => n.id === s); const tN = NODES.find(n => n.id === t); let sh = true; if (filter !== "all") sh = sN?.type === filter || tN?.type === filter; if (edgeFilter !== "all") sh = sh && d.type === edgeFilter; el.style("opacity", sh ? 0.3 : 0.015); });
   }, [filter, edgeFilter, searchTerm]);
 
-  const selectedNode = selected ? NODES.find(n => n.id === selected.id) : null;
-  const connectedEdges = selectedNode ? EDGES.filter(e => e.source === selectedNode.id || e.target === selectedNode.id) : [];
-
-  const stats = { nodes: NODES.length, edges: EDGES.length, movements: NODES.filter(n => n.type === "movement").length, concepts: NODES.filter(n => n.type === "concept").length };
+  const sn = selected ? NODES.find(n => n.id === selected.id) : null;
+  const ce = sn ? EDGES.filter(e => e.source === sn.id || e.target === sn.id) : [];
+  const st = { n: NODES.length, e: EDGES.length, m: NODES.filter(n => n.type === "movement").length, c: NODES.filter(n => n.type === "concept").length };
 
   return (
-    <div style={{ background: "#0a0a14", color: "#e0e0e0", fontFamily: "'Inter', system-ui, -apple-system, sans-serif", height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ background: "#0a0a14", color: "#e0e0e0", fontFamily: "'Inter', system-ui, sans-serif", height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div style={{ padding: "10px 16px", borderBottom: "1px solid #151530", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, flexWrap: "wrap", gap: 8, background: "#0d0d1a" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em" }}>Literary Concept Map</h1>
-            <p style={{ margin: "1px 0 0", fontSize: 10, color: "#4a4a6a" }}>
-              {stats.nodes} nodes ({stats.movements} movements, {stats.concepts} concepts) · {stats.edges} connections
-            </p>
-          </div>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em" }}>Literary Concept Map</h1>
+          <p style={{ margin: "1px 0 0", fontSize: 10, color: "#4a4a6a" }}>{st.n} nodes ({st.m} movements, {st.c} concepts) · {st.e} connections</p>
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-          <input
-            type="text"
-            placeholder="Search nodes, thinkers, works..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            style={{ background: "#111122", color: "#ccc", border: "1px solid #1e1e3e", borderRadius: 6, padding: "5px 10px", fontSize: 11, width: 200, outline: "none" }}
-          />
-          <select value={filter} onChange={e => setFilter(e.target.value)} style={{ background: "#111122", color: "#aaa", border: "1px solid #1e1e3e", borderRadius: 6, padding: "5px 8px", fontSize: 11 }}>
-            <option value="all">All Types</option>
-            <option value="movement">Movements</option>
-            <option value="concept">Concepts</option>
-          </select>
-          <select value={edgeFilter} onChange={e => setEdgeFilter(e.target.value)} style={{ background: "#111122", color: "#aaa", border: "1px solid #1e1e3e", borderRadius: 6, padding: "5px 8px", fontSize: 11 }}>
-            <option value="all">All Relations</option>
-            {Object.entries(EDGE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-          </select>
+          <input type="text" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ background: "#111122", color: "#ccc", border: "1px solid #1e1e3e", borderRadius: 6, padding: "5px 10px", fontSize: 11, width: 160, outline: "none" }} />
+          <select value={filter} onChange={e => setFilter(e.target.value)} style={{ background: "#111122", color: "#aaa", border: "1px solid #1e1e3e", borderRadius: 6, padding: "5px 8px", fontSize: 11 }}><option value="all">All</option><option value="movement">Movements</option><option value="concept">Concepts</option></select>
+          <select value={edgeFilter} onChange={e => setEdgeFilter(e.target.value)} style={{ background: "#111122", color: "#aaa", border: "1px solid #1e1e3e", borderRadius: 6, padding: "5px 8px", fontSize: 11 }}><option value="all">All Relations</option>{Object.entries(EDGE_LABELS_DISPLAY).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
         </div>
       </div>
-
-      <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
-        <svg ref={svgRef} width={dimensions.w} height={dimensions.h} style={{ flex: 1, display: "block" }} />
-
-        <div style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(10,10,20,0.92)", border: "1px solid #151530", borderRadius: 8, padding: "8px 12px", fontSize: 9, backdropFilter: "blur(8px)" }}>
+      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+        <svg ref={svgRef} width={dims.w} height={dims.h} style={{ flex: 1, display: "block" }} />
+        <div style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(10,10,20,0.92)", border: "1px solid #151530", borderRadius: 8, padding: "8px 12px", fontSize: 9, backdropFilter: "blur(6px)" }}>
           <div style={{ fontWeight: 600, marginBottom: 5, color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", fontSize: 8 }}>Edges</div>
-          {Object.entries(EDGE_COLORS).map(([k, c]) => (
-            <div key={k} style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2, cursor: "pointer", opacity: edgeFilter === "all" || edgeFilter === k ? 1 : 0.3 }} onClick={() => setEdgeFilter(prev => prev === k ? "all" : k)}>
-              <div style={{ width: 16, height: 2, background: c, borderRadius: 1 }} />
-              <span style={{ color: "#888" }}>{EDGE_LABELS[k]}</span>
-            </div>
-          ))}
+          {Object.entries(EDGE_COLORS).map(([k, c]) => (<div key={k} style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2, cursor: "pointer", opacity: edgeFilter === "all" || edgeFilter === k ? 1 : 0.3 }} onClick={() => setEdgeFilter(p => p === k ? "all" : k)}><div style={{ width: 16, height: 2, background: c, borderRadius: 1 }} /><span style={{ color: "#888" }}>{EDGE_LABELS_DISPLAY[k]}</span></div>))}
           <div style={{ marginTop: 6, fontWeight: 600, marginBottom: 5, color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", fontSize: 8 }}>Nodes</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
-            <div style={{ width: 10, height: 10, borderRadius: "50%", border: `1.5px solid ${NODE_COLORS.movement.stroke}`, background: NODE_COLORS.movement.fill }} />
-            <span style={{ color: "#888" }}>Movement</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", border: `1.5px solid ${NODE_COLORS.concept.stroke}`, background: NODE_COLORS.concept.fill }} />
-            <span style={{ color: "#888" }}>Concept</span>
-          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}><div style={{ width: 10, height: 10, borderRadius: "50%", border: `1.5px solid ${NC.movement.stroke}`, background: NC.movement.fill }} /><span style={{ color: "#888" }}>Movement</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}><div style={{ width: 8, height: 8, borderRadius: "50%", border: `1.5px solid ${NC.concept.stroke}`, background: NC.concept.fill }} /><span style={{ color: "#888" }}>Concept</span></div>
         </div>
-
-        {!selected && !hoveredNode && (
-          <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(10,10,20,0.8)", border: "1px solid #151530", borderRadius: 6, padding: "6px 10px", fontSize: 10, color: "#4a4a6a" }}>
-            Hover to trace · Click for details · Drag to rearrange
-          </div>
-        )}
-
-        {selectedNode && (
-          <div style={{
-            position: "absolute", top: 0, right: 0, width: Math.min(340, dimensions.w * 0.4), height: "100%",
-            background: "rgba(10,10,20,0.96)", borderLeft: "1px solid #151530",
-            overflowY: "auto", padding: "16px 18px",
-            backdropFilter: "blur(12px)",
-            animation: "slideIn 0.15s ease-out"
-          }}>
-            <style>{`@keyframes slideIn { from { transform: translateX(16px); opacity:0; } to { transform: translateX(0); opacity:1; } }`}</style>
+        {!sn && <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(10,10,20,0.8)", border: "1px solid #151530", borderRadius: 6, padding: "6px 10px", fontSize: 10, color: "#4a4a6a" }}>Hover to trace · Click for details · Drag to rearrange</div>}
+        {sn && (
+          <div style={{ position: "absolute", top: 0, right: 0, width: Math.min(340, dims.w * 0.4), height: "100%", background: "rgba(10,10,20,0.96)", borderLeft: "1px solid #151530", overflowY: "auto", padding: "16px 18px", backdropFilter: "blur(12px)", animation: "si 0.15s ease-out" }}>
+            <style>{`@keyframes si { from { transform: translateX(16px); opacity:0; } to { transform: translateX(0); opacity:1; } }`}</style>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
               <div>
-                <span style={{
-                  fontSize: 8, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600,
-                  color: NODE_COLORS[selectedNode.type].stroke, display: "block", marginBottom: 3
-                }}>{selectedNode.type} · {selectedNode.era}</span>
-                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>{selectedNode.label}</h2>
+                <span style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, color: NC[sn.type].stroke, display: "block", marginBottom: 3 }}>{sn.type} · {sn.era}</span>
+                {nodeWikiUrl(sn.id) ? (
+                  <a href={nodeWikiUrl(sn.id)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                    <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", transition: "color 0.15s" }} onMouseEnter={e => e.target.style.color = NC[sn.type].stroke} onMouseLeave={e => e.target.style.color = "#fff"}>{sn.label} <span style={{ fontSize: 11, opacity: 0.4 }}>↗</span></h2>
+                  </a>
+                ) : (
+                  <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>{sn.label}</h2>
+                )}
               </div>
-              <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: "#555", fontSize: 18, cursor: "pointer", padding: "0 2px", lineHeight: 1 }}>×</button>
+              <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: "#555", fontSize: 18, cursor: "pointer" }}>×</button>
             </div>
-
-            <p style={{ fontSize: 12, lineHeight: 1.65, color: "#999", marginBottom: 14 }}>{selectedNode.description}</p>
-
+            <p style={{ fontSize: 12, lineHeight: 1.65, color: "#999", marginBottom: 14 }}>{sn.description}</p>
             <div style={{ marginBottom: 14 }}>
               <h3 style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4a4a6a", marginBottom: 5, fontWeight: 600 }}>Key Thinkers</h3>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                {selectedNode.thinkers.map(t => (
-                  <span key={t} style={{ background: "#12122a", padding: "2px 7px", borderRadius: 4, fontSize: 10, color: "#8888aa", border: "1px solid #1a1a3a" }}>{t}</span>
+                {sn.thinkers.map(t => (
+                  <a key={t} href={wikiUrl(t)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                    <span style={{ background: "#12122a", padding: "2px 7px", borderRadius: 4, fontSize: 10, color: "#8888aa", border: "1px solid #1a1a3a", cursor: "pointer", transition: "color 0.15s, border-color 0.15s", display: "inline-block" }} onMouseEnter={e => { e.target.style.color = "#bbbbff"; e.target.style.borderColor = "#3333aa"; }} onMouseLeave={e => { e.target.style.color = "#8888aa"; e.target.style.borderColor = "#1a1a3a"; }}>{t}</span>
+                  </a>
                 ))}
               </div>
             </div>
-
             <div style={{ marginBottom: 14 }}>
               <h3 style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4a4a6a", marginBottom: 5, fontWeight: 600 }}>Key Works</h3>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                {selectedNode.works.map(w => (
-                  <span key={w} style={{ background: "#12122a", padding: "2px 7px", borderRadius: 4, fontSize: 10, color: "#8888aa", fontStyle: "italic", border: "1px solid #1a1a3a" }}>{w}</span>
-                ))}
-              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>{sn.works.map(w => <span key={w} style={{ background: "#12122a", padding: "2px 7px", borderRadius: 4, fontSize: 10, color: "#8888aa", fontStyle: "italic", border: "1px solid #1a1a3a" }}>{w}</span>)}</div>
             </div>
-
-            {connectedEdges.length > 0 && (
+            {ce.length > 0 && (
               <div>
-                <h3 style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4a4a6a", marginBottom: 6, fontWeight: 600 }}>Connections ({connectedEdges.length})</h3>
-                {connectedEdges.map((e, i) => {
-                  const isSource = e.source === selectedNode.id;
-                  const otherId = isSource ? e.target : e.source;
-                  const other = NODES.find(n => n.id === otherId);
+                <h3 style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4a4a6a", marginBottom: 6, fontWeight: 600 }}>Connections ({ce.length})</h3>
+                {ce.map((e, i) => {
+                  const iS = e.source === sn.id; const oId = iS ? e.target : e.source; const o = NODES.find(n => n.id === oId);
                   return (
-                    <div key={i} style={{
-                      display: "flex", alignItems: "center", gap: 7, marginBottom: 4,
-                      padding: "5px 7px", borderRadius: 5, background: "#0e0e1e",
-                      cursor: "pointer", border: "1px solid transparent",
-                      transition: "border-color 0.15s"
-                    }}
-                    onMouseEnter={ev => ev.currentTarget.style.borderColor = "#1e1e3e"}
-                    onMouseLeave={ev => ev.currentTarget.style.borderColor = "transparent"}
-                    onClick={() => setSelected(other)}>
-                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: EDGE_COLORS[e.type], flexShrink: 0 }} />
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3, padding: "4px 6px", borderRadius: 5, background: "#0e0e1e", cursor: "pointer", border: "1px solid transparent", transition: "border-color 0.15s" }} onMouseEnter={ev => ev.currentTarget.style.borderColor = "#1e1e3e"} onMouseLeave={ev => ev.currentTarget.style.borderColor = "transparent"} onClick={() => setSelected(o)}>
+                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: EDGE_COLORS[e.type], flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 10.5, color: "#ccc", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          <span style={{ color: "#555" }}>{isSource ? "→" : "←"}</span> {other?.label}
-                        </div>
-                        <div style={{ fontSize: 9, color: "#555" }}>
-                          {EDGE_LABELS[e.type]} · {e.label}
-                        </div>
+                        <div style={{ fontSize: 10, color: "#ccc", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}><span style={{ color: "#444" }}>{iS ? "→" : "←"}</span> {o?.label}</div>
+                        <div style={{ fontSize: 8.5, color: "#555" }}>{EDGE_LABELS_DISPLAY[e.type]} · {e.label}</div>
                       </div>
                     </div>
                   );
